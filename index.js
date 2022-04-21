@@ -10,9 +10,9 @@ const productRoute = require("./routes/product");
 const orderRoute = require("./routes/order");
 const shopRoute = require("./routes/shop");
 const categoryRoute = require("./routes/category");
-const subCategoryRoute = require("./routes/subCategory");
+const subCategoryRoute = require("./routes/tags");
 const paymentRoute = require("./routes/payment");
-const searchRoute = require("./routes/search");
+// const searchRoute = require("./routes/search");
 
 require("dotenv").config();
 const app = express();
@@ -45,9 +45,9 @@ async function run() {
         app.use("/order", orderRoute);
         app.use("/shop", shopRoute);
         app.use("/category", categoryRoute);
-        app.use("/subcategory", subCategoryRoute);
+        app.use("/tag", subCategoryRoute);
         app.use("/payment", paymentRoute);
-        app.use("/search", searchRoute);
+        // app.use("/search", searchRoute);
     } finally {
         // await client.close();
     }

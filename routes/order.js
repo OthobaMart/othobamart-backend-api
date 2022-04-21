@@ -6,6 +6,9 @@ const Order = new mongoose.model("Order", orderSchema);
 const {
     verifyTokenAndAuthorization,
     verifyTokenAndSuperAdminOrVendor,
+    verifyTokenAndAdmin,
+    verifyTokenAndAdminOrVendor,
+    verifyTokenAndSuperAdminOrVendororCustomer,
 } = require("./verifyToken");
 
 router.post("/place", verifyTokenAndAuthorization, async (req, res) => {
@@ -28,10 +31,11 @@ router.post("/place", verifyTokenAndAuthorization, async (req, res) => {
 });
 
 // get all orders
-router.get("/", async (req, res) => {
+router.get("/", verifyTokenAndAdmin, async (req, res) => {
     try {
-        await Order.find({})
-            .select(" -__v -createdAt -updatedAt")
+        await Order.find()
+            .sort({ _id: -1 })
+            .select(" -__v -updatedAt")
             .exec((err, data) => {
                 if (err) {
                     res.status(500).json({
@@ -54,8 +58,8 @@ router.get("/", async (req, res) => {
     }
 });
 
-// approve vendor
-router.put("/:id", verifyTokenAndSuperAdminOrVendor, async (req, res) => {
+// change order status
+router.put("/:id", verifyTokenAndAdminOrVendor, async (req, res) => {
     try {
         const updatedOrder = await Order.findByIdAndUpdate(
             req.params.id,
@@ -77,5 +81,51 @@ router.put("/:id", verifyTokenAndSuperAdminOrVendor, async (req, res) => {
         });
     }
 });
+
+// find a user's orders
+router.get("/userid", verifyTokenAndAuthorization, async (req, res) => {
+    try {
+        const data = await Order.find({
+            $or: [
+                {
+                    user_id: req.query.id,
+                },
+            ],
+        }).sort({ _id: -1 });
+        res.status(200).json({
+            status: 0,
+            result: data,
+            message: "User Order retrieve successfully!",
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            status: 1,
+            error: "There was a server side error!",
+        });
+    }
+});
+
+// get single order data
+router.get(
+    "/:id",
+    verifyTokenAndSuperAdminOrVendororCustomer,
+    async (req, res) => {
+        try {
+            const data = await Order.findById(req.params.id);
+            res.status(200).json({
+                status: 0,
+                result: data,
+                message: "Order retrieve successfully!",
+            });
+        } catch (err) {
+            console.log(err);
+            res.status(500).json({
+                status: 1,
+                error: "There was a server side error!",
+            });
+        }
+    }
+);
 
 module.exports = router;

@@ -55,6 +55,7 @@ router.post("/register/vendor", async (req, res) => {
         } else {
             res.status(200).json({
                 status: 0,
+                data: newVendor,
                 message: "Vendor added successfully!",
             });
         }

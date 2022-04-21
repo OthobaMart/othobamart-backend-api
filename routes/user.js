@@ -6,13 +6,15 @@ const User = new mongoose.model("User", userSchema);
 const {
     verifyTokenAndAuthorization,
     verifyTokenAndAdmin,
+    verifyTokenAndSuperAdmin,
 } = require("./verifyToken");
 
 // FETCH USERS
 router.get("/all", verifyTokenAndAdmin, async (req, res) => {
-    await User.find({})
-        .populate("shop", "-__v -createdAt -updatedAt -vendor")
-        .select("-__v -createdAt -updatedAt -password ")
+    await User.find()
+        .populate("shop", "-__v -updatedAt -vendor")
+        .select("-__v -updatedAt -password ")
+        .sort({ _id: -1 })
         .exec((err, data) => {
             if (err) {
                 res.status(500).json({
@@ -76,7 +78,7 @@ router.put("/:id", verifyTokenAndAuthorization, async (req, res) => {
     }
 });
 
-//UPDATE USER PASSWORD
+// Change USER PASSWORD
 router.put(
     "/changepassword/:id",
     verifyTokenAndAuthorization,
@@ -110,35 +112,6 @@ router.put(
     }
 );
 
-//UPDATE SINGLE USER
-router.put("/:id", verifyTokenAndAuthorization, async (req, res) => {
-    if (req.body.password) {
-        req.body.password = CryptoJS.AES.encrypt(
-            req.body.password,
-            process.env.PASS_SEC
-        ).toString();
-    }
-    try {
-        const updatedUser = await User.findByIdAndUpdate(
-            req.params.id,
-            {
-                $set: req.body,
-            },
-            { new: true }
-        );
-        res.status(200).json({
-            status: 0,
-            result: updatedUser,
-            message: "User data updated successfully!",
-        });
-    } catch (err) {
-        res.status(500).json({
-            status: 1,
-            error: "There was a server side error!",
-        });
-    }
-});
-
 // approve vendor
 router.put("/vendor/:id", verifyTokenAndAdmin, async (req, res) => {
     try {
@@ -164,7 +137,7 @@ router.put("/vendor/:id", verifyTokenAndAdmin, async (req, res) => {
 });
 
 //DELETE A USER
-router.delete("/:id", verifyTokenAndAuthorization, async (req, res) => {
+router.delete("/:id", verifyTokenAndSuperAdmin, async (req, res) => {
     try {
         await User.findByIdAndDelete(req.params.id);
         res.status(200).json({

@@ -38,7 +38,7 @@ const Shop = new mongoose.model("Shop", shopSchema);
 
 // get searched products
 router.get("/", async (req, res) => {
-    console.log(req.query.key);
+    // console.log(req.query.key);
     try {
         let query = {};
         let regex;
@@ -53,7 +53,7 @@ router.get("/", async (req, res) => {
             };
         }
         // console.log(query);
-        const data = await Product.find(query);
+        const data = await Product.find(query).sort({ _id: -1 });
         res.status(200).json({
             status: 0,
             result: data,
@@ -76,6 +76,7 @@ router.get("/paginated", async (req, res) => {
         const data = await Product.find()
             .limit(limit * 1)
             .skip(page * limit)
+            .sort({ _id: -1 })
             .exec();
         const count = await Product.countDocuments();
         res.status(200).json({
@@ -115,43 +116,42 @@ router.get("/:id", async (req, res) => {
 // add a product
 router.post("/", verifyTokenAndAdminOrVendor, async (req, res) => {
     const file = req.files.photo;
-    let pro_id;
+    let product_id;
     try {
-        await cloudinary.uploader.upload(
-            file.tempFilePath,
-            async (err, result) => {
-                const filePath = result.secure_url;
-                const newProduct = new Product({
-                    ...req.body,
-                    product_img: filePath,
-                    shop: req.user.shop_id,
-                });
-                const addProduct = await newProduct.save();
-                pro_id = addProduct._id;
-                await Shop.updateOne(
-                    {
-                        _id: req.user.shop_id,
+        await cloudinary.uploader.upload(file.tempFilePath, async (result) => {
+            const filePath = result.secure_url;
+            const newProduct = new Product({
+                ...req.body,
+                product_img: filePath,
+                shop: req.user.shop_id,
+            });
+            const addProduct = await newProduct.save();
+            product_id = addProduct._id;
+            await Shop.updateOne(
+                {
+                    _id: req.user.shop_id,
+                },
+                {
+                    $push: {
+                        shop_products: addProduct._id,
                     },
-                    {
-                        $push: {
-                            shop_products: addProduct._id,
-                        },
-                    }
-                );
-            }
-        );
+                }
+            );
+        });
         if (req.files.gallery !== "") {
             let galleryImg = req.files?.gallery;
+            // checking if multi images
             const isArr = Array.isArray(galleryImg);
             if (isArr) {
                 galleryImg.map(async (item) => {
                     await cloudinary.uploader.upload(
                         item.tempFilePath,
+
                         async (req, res) => {
                             // await console.log(res.secure_url);
                             await Product.updateOne(
                                 {
-                                    _id: pro_id,
+                                    _id: product_id,
                                 },
                                 {
                                     $push: {
@@ -187,7 +187,7 @@ router.post("/", verifyTokenAndAdminOrVendor, async (req, res) => {
             message: "Product added successfully!",
         });
     } catch (err) {
-        console.log(err);
+        // console.log(err);
         res.status(500).json({
             status: 1,
             error: "There was a server side error!",
@@ -195,7 +195,7 @@ router.post("/", verifyTokenAndAdminOrVendor, async (req, res) => {
     }
 });
 
-// approve vendor
+// approve product
 router.put("/status/:id", verifyTokenAndAdminOrVendor, async (req, res) => {
     try {
         const changeStatus = await Product.findByIdAndUpdate(

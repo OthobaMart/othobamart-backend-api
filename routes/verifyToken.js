@@ -16,10 +16,10 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-// admin or customer
-const verifyTokenAndAuthorization = (req, res, next) => {
+// customer
+const verifyTokenAndCustomer = (req, res, next) => {
     verifyToken(req, res, () => {
-        if (req.user.isAdmin || req.user.isCustomer) {
+        if (req.user.isCustomer) {
             next();
         } else {
             res.status(403).json("Unauthorized request!");
@@ -31,6 +31,39 @@ const verifyTokenAndAuthorization = (req, res, next) => {
 const verifyTokenAndAdmin = (req, res, next) => {
     verifyToken(req, res, () => {
         if (req.user.isAdmin) {
+            next();
+        } else {
+            res.status(403).json("Unauthorized request!");
+        }
+    });
+};
+
+// vendor verify
+const verifyTokenAndVendor = (req, res, next) => {
+    verifyToken(req, res, () => {
+        if (req.user.isVendor) {
+            next();
+        } else {
+            res.status(403).json("Unauthorized request!");
+        }
+    });
+};
+
+// super-admin verify
+const verifyTokenAndSuperAdmin = (req, res, next) => {
+    verifyToken(req, res, () => {
+        if (req.user.isSuperAdmin) {
+            next();
+        } else {
+            res.status(403).json("Unauthorized request!");
+        }
+    });
+};
+
+// admin or customer
+const verifyTokenAndAuthorization = (req, res, next) => {
+    verifyToken(req, res, () => {
+        if (req.user.isAdmin || req.user.isCustomer) {
             next();
         } else {
             res.status(403).json("Unauthorized request!");
@@ -59,10 +92,30 @@ const verifyTokenAndSuperAdminOrVendor = (req, res, next) => {
         }
     });
 };
+//admin or vendor or superadmin
+const verifyTokenAndSuperAdminOrVendororCustomer = (req, res, next) => {
+    verifyToken(req, res, () => {
+        if (
+            req.user.isAdmin ||
+            req.user.isVendor ||
+            req.user.isSuperAdmin ||
+            req.user.isCustomer
+        ) {
+            next();
+        } else {
+            res.status(403).json("Unauthorized request!");
+        }
+    });
+};
 
 module.exports = {
     verifyTokenAndAuthorization,
     verifyTokenAndAdmin,
     verifyTokenAndAdminOrVendor,
     verifyTokenAndSuperAdminOrVendor,
+    verifyTokenAndSuperAdmin,
+    verifyTokenAndCustomer,
+    verifyTokenAndVendor,
+    verifyToken,
+    verifyTokenAndSuperAdminOrVendororCustomer,
 };

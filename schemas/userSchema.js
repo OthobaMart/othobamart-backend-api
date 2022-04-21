@@ -16,10 +16,6 @@ const userSchema = mongoose.Schema(
             type: String,
             required: true,
         },
-        isVendor: {
-            type: String,
-            default: false,
-        },
         isAdmin: {
             type: Boolean,
             default: false,
@@ -29,8 +25,12 @@ const userSchema = mongoose.Schema(
             default: false,
         },
         isCustomer: {
-            type: String,
+            type: Boolean,
             default: true,
+        },
+        isVendor: {
+            type: Boolean,
+            default: false,
         },
         shop_name: {
             type: String,

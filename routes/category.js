@@ -26,9 +26,10 @@ router.post("/", verifyTokenAndAdminOrVendor, async (req, res) => {
 
 // get all categories
 router.get("/", verifyTokenAndAdminOrVendor, async (req, res) => {
-    await Category.find({})
-        .populate("subCategories", "-__v -createdAt -updatedAt")
-        .select("-__v -createdAt -updatedAt")
+    await Category.find()
+        .sort({ _id: -1 })
+        .populate("subCategories", " -updatedAt")
+        .select(" -updatedAt")
         .exec((err, data) => {
             if (err) {
                 res.status(500).json({
