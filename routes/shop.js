@@ -14,30 +14,31 @@ const User = new mongoose.model("User", userSchema);
 
 // add a shop
 router.post("/", verifyTokenAndAuthorization, async (req, res) => {
-    const file = req.files.shop_logo;
+    const file = req?.files?.shop_logo;
+    console.log(req.user);
+    console.log(file);
+    console.log(file?.tempFilePath);
     try {
-        await cloudinary.uploader.upload(
-            file.tempFilePath,
-            async (result) => {
-                const filePath = result.secure_url;
-                const newShop = new Shop({
-                    ...req.body,
-                    vendor: req.user.id,
-                    shop_logo: filePath,
-                });
-                const addShop = await newShop.save();
-                await User.updateOne(
-                    {
-                        _id: req.user.id,
+        await cloudinary.uploader.upload(file?.tempFilePath, (result) => {
+            console.log(result);
+            const filePath = result?.secure_url;
+            const newShop = new Shop({
+                ...req.body,
+                vendor: req.user.id,
+                shop_logo: filePath,
+            });
+            const addShop = newShop.save();
+            User.updateOne(
+                {
+                    _id: req.user.id,
+                },
+                {
+                    $set: {
+                        shop: addShop._id,
                     },
-                    {
-                        $set: {
-                            shop: addShop._id,
-                        },
-                    }
-                );
-            }
-        );
+                }
+            );
+        });
         res.status(200).json({
             status: 0,
             message: "Shop data added successfully!",

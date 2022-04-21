@@ -4,14 +4,13 @@ const vendorSchema = mongoose.Schema(
     {
         shop_logo: {
             type: String,
-            required: true,
         },
         vendor_name: {
             type: String,
             required: true,
             unique: true,
         },
-        email: {
+        vendor_email: {
             type: String,
             required: true,
             unique: true,
