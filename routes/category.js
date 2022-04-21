@@ -5,6 +5,8 @@ const categorySchema = require("../schemas/categorySchema");
 const Category = new mongoose.model("Category", categorySchema);
 const { verifyTokenAndAdminOrVendor } = require("./verifyToken");
 
+
+// add category
 router.post("/", verifyTokenAndAdminOrVendor, async (req, res) => {
     // console.log(req.body);
     const newCategory = new Category(req.body);
