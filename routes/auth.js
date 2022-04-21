@@ -104,6 +104,7 @@ router.post("/login", async (req, res) => {
         console.log(err);
         res.status(500).json({
             status: 1,
+            res: err,
             error: "There was a server side error!",
         });
     }
