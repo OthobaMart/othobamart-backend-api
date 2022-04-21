@@ -25,6 +25,7 @@ router.post("/register", async (req, res) => {
         } else {
             res.status(200).json({
                 status: 0,
+                data: newUser,
                 message: "User added successfully!",
             });
         }

@@ -9,26 +9,58 @@ const shopSchema = require("../schemas/shopSchema");
 const Shop = new mongoose.model("Shop", shopSchema);
 
 // get all products
+// router.get("/", async (req, res) => {
+//     try {
+//         await Product.find({})
+//             .populate("shop", " -__v -createdAt -updatedAt -shop_products ")
+//             .select(" -__v -createdAt -updatedAt")
+//             .exec((err, data) => {
+//                 if (err) {
+//                     res.status(500).json({
+//                         status: 1,
+//                         error: "There was a server side error!",
+//                     });
+//                 } else {
+//                     res.status(200).json({
+//                         status: 0,
+//                         result: data,
+//                         message: "Products retrieve successfully!",
+//                     });
+//                 }
+//             });
+//     } catch (err) {
+//         res.status(500).json({
+//             status: 1,
+//             error: "There was a server side error!",
+//         });
+//     }
+// });
+
+// get searched products
 router.get("/", async (req, res) => {
+    console.log(req.query.key);
     try {
-        await Product.find({})
-            .populate("shop", " -__v -createdAt -updatedAt -shop_products ")
-            .select(" -__v -createdAt -updatedAt")
-            .exec((err, data) => {
-                if (err) {
-                    res.status(500).json({
-                        status: 1,
-                        error: "There was a server side error!",
-                    });
-                } else {
-                    res.status(200).json({
-                        status: 0,
-                        result: data,
-                        message: "Products retrieve successfully!",
-                    });
-                }
-            });
+        let query = {};
+        let regex;
+        if (req.query.key) {
+            regex = new RegExp(req.query.key, "i");
+            query = {
+                $or: [
+                    {
+                        product_name: regex,
+                    },
+                ],
+            };
+        }
+        // console.log(query);
+        const data = await Product.find(query);
+        res.status(200).json({
+            status: 0,
+            result: data,
+            message: "Search data retrieve successfully!",
+        });
     } catch (err) {
+        console.log(err);
         res.status(500).json({
             status: 1,
             error: "There was a server side error!",
